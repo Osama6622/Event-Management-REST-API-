@@ -4,23 +4,26 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttendeeResource;
+use App\Http\Traits\CanLoadRelationships;
 use App\Models\Attendee;
 use App\Models\Event;
 use Illuminate\Http\Request;
 
 class AttendeeController extends Controller
 {
+    use CanLoadRelationships;
+
+    private array $relations = ['user'];
+
     /**
      * Display a listing of the resource.
      */
     public function index(Event $event)
     {
-        // get the attendees for the event and order by the latest
-        $attendees = $event->attendees()->latest();
-
-        // paginate the attendees and return a collection of attendees resources
         return AttendeeResource::collection(
-            $attendees->paginate()
+            $this->loadRelationships(
+                Attendee::query()->where('event_id', $event->id)
+            )->latest()->paginate()
         );
     }
 
@@ -34,7 +37,7 @@ class AttendeeController extends Controller
             'user_id' => 1,
         ]);
 
-        return new AttendeeResource($attendee);
+        return new AttendeeResource($this->loadRelationships($attendee));
     }
 
     /**
@@ -42,7 +45,7 @@ class AttendeeController extends Controller
      */
     public function show(Event $event, Attendee $attendee)
     {
-        return new AttendeeResource($attendee);
+        return new AttendeeResource($this->loadRelationships($attendee));
     }
 
     /**
@@ -50,7 +53,7 @@ class AttendeeController extends Controller
      */
     public function destroy(string $event, Attendee $attendee)
     {
-        $attendee->delete($attendee);
+        $attendee->delete();
         return response(status: 204); // 204 is a successful response without a body
     }
 }
