@@ -20,10 +20,10 @@ class AttendeeController extends Controller
      */
     public function index(Event $event)
     {
+        $attendees = $this->loadRelationships($event->attendees()->latest());
+
         return AttendeeResource::collection(
-            $this->loadRelationships(
-                Attendee::query()->where('event_id', $event->id)
-            )->latest()->paginate()
+            $attendees->paginate()
         );
     }
 
@@ -33,11 +33,13 @@ class AttendeeController extends Controller
     public function store(Request $request, Event $event)
     {
         // create a new attendee for the event
-        $attendee = $event->attendees()->create([
-            'user_id' => 1,
-        ]);
+        $attendee = $this->loadRelationships(
+            $event->attendees()->create([
+                'user_id' => 1,
+            ])
+        );
 
-        return new AttendeeResource($this->loadRelationships($attendee));
+        return new AttendeeResource($attendee);
     }
 
     /**
