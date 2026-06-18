@@ -8,6 +8,7 @@ use App\Http\Traits\CanLoadRelationships;
 use App\Models\Attendee;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class AttendeeController extends Controller
 {
@@ -53,8 +54,12 @@ class AttendeeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $event, Attendee $attendee)
+    public function destroy(Event $event, Attendee $attendee)
     {
+        if(Gate::denies('delete-attendee', [$event, $attendee])) {
+            abort(403, 'You are not authorized to delete this attendee.');
+        }
+
         $attendee->delete();
         return response(status: 204); // 204 is a successful response without a body
     }
