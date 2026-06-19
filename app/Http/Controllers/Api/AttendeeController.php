@@ -33,10 +33,16 @@ class AttendeeController extends Controller
      */
     public function store(Request $request, Event $event)
     {
+        /**
+         * Using Policy instead of Gate::denies
+         * Gate::authorize is a method that authorizes the user to create an attendee.
+         */
+        Gate::authorize('create', Attendee::class);
+
         // create a new attendee for the event
         $attendee = $this->loadRelationships(
             $event->attendees()->create([
-                'user_id' => 1,
+                'user_id' => $request->user()->id,
             ])
         );
 
@@ -56,9 +62,18 @@ class AttendeeController extends Controller
      */
     public function destroy(Event $event, Attendee $attendee)
     {
-        if(Gate::denies('delete-attendee', [$event, $attendee])) {
-            abort(403, 'You are not authorized to delete this attendee.');
-        }
+        /**
+         * Using Policy instead of Gate::denies
+         * Gate::authorize is a method that authorizes the user to delete the attendee.
+         */
+        Gate::authorize('delete', $attendee);
+
+        /**
+         * Using Gate::denies instead of Gate::authorize
+         */
+        // if(Gate::denies('delete-attendee', [$event, $attendee])) {
+        //     abort(403, 'You are not authorized to delete this attendee.');
+        // }
 
         $attendee->delete();
         return response(status: 204); // 204 is a successful response without a body

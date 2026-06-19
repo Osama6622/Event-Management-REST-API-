@@ -61,9 +61,18 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        if(Gate::denies('update-event', $event )) {
-            abort(403, 'You are not authorized to update this event.');
-        }
+        /**
+         * Gate::denies is a method that checks if the user is not authorized to update the event.
+         */
+        // if(Gate::denies('update-event', $event )) {
+        //     abort(403, 'You are not authorized to update this event.');
+        // }
+
+        /** 
+         * Using Policy instead of Gate::denies
+         * Gate::authorize is a method that authorizes the user to update the event.
+         */
+        Gate::authorize('update', $event);
 
         // $this->authorize('update-event', $event);
 
@@ -84,6 +93,12 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
+        /**
+         * Using Policy instead of Gate::denies
+         * Gate::authorize is a method that authorizes the user to delete the event.
+         */
+        Gate::authorize('delete', $event);
+
         $event->delete();
 
         // return response(status: 204);
