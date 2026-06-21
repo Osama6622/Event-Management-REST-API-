@@ -14,10 +14,16 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::apiResource('events', EventController::class)
-    ->middleware('auth:sanctum', ['only' => ['store', 'update', 'destroy']]);
+    ->middleware([
+        'auth:sanctum', ['only' => ['store', 'update', 'destroy']],
+        'throttle:10,1' => ['only' => ['store', 'update', 'destroy']],
+    ]);
     
 // scoped is a method that allows you to scope the route to the event
 // so that the attendee is always associated with the event
 Route::apiResource('events.attendees', AttendeeController::class)
     // except(['update']) is a method that allows you to exclude the update method from the scoped route
-    ->scoped()->except(['update'])->middleware('auth:sanctum', ['only' => ['store', 'destroy']]);
+    ->scoped()->except(['update'])->middleware([
+        'auth:sanctum', ['only' => ['store', 'destroy']],
+        'throttle:10,1' => ['only' => ['store', 'destroy']],
+    ]);
