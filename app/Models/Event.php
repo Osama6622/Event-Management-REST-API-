@@ -13,6 +13,11 @@ class Event extends Model
 
     protected $fillable = ['name', 'description', 'start_time', 'end_time', 'user_id'];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
+
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }
